@@ -1206,6 +1206,8 @@ ui <- fluidPage(
                     also produce a table of p-values produced in pairwise testing. Categorical variables can be coded as 0 or 1, or using 
                     character names like 'one' or 'two'. All categorical variables with more than two possible values should be coded as 
                     character names."),
+		  p("Example output:"),
+                  img(src = "pic6.png", height = 105, width = 520),
                   h3("Step1: Uploading a spreadsheet"),
                   p("Must use .csv file that any excel file can be converted to using 'Save As'
                   and should be in the format where variable/ column names are contained in the first row as 
