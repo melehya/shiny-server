@@ -1,13 +1,12 @@
-##### Convert character to numeric string, can handle ordinal varialbes 
-#### will convert them to independent binary response variables, which is 
-#### appropriate for descriptive analysis, but for other analyses variables 
-###  should be kept in their ordinal form. Also determines if any columns contain 
-### dates and removes them. Otherwise would turn each individual date into a separate 
-### categorical variables 
-#install.packages("shinycssloaders")
+# Main fxn 1: ConvertChar: converts character to numeric string, can handle ordinal varialbes 
+# will convert them to independent binary response variables, which is 
+# appropriate for descriptive analysis, but for other analyses variables 
+# should be kept in their ordinal form. Also determines if any columns contain 
+# dates and removes them. Otherwise would turn each individual date into a separate 
+# categorical variables 
 
-### Removes specified column from dataframe or list, empty if 
-### neither dataframe or list 
+## charlist_creat: removes specified column from dataframe or list, empty if 
+## neither dataframe or list 
 
 charlist_create <- function(dataframe_column)
 {
@@ -29,6 +28,7 @@ charlist_create <- function(dataframe_column)
   return(charlist)
 }
 
+## remove_var: removes specified variable from list 
 remove_var <- function(dataframe, var)
 {
   ifelse((class(dataframe)=="data.frame"),
@@ -72,8 +72,8 @@ remove_var <- function(dataframe, var)
          })
   return(new.frame)
 }
-#### need to deal with ordinal variables 
 
+#
 ConvertChar <- function(dataframe, group_name)
 {
   new_frame <- data.frame(matrix(nrow=1,ncol=1))
@@ -187,39 +187,20 @@ ConvertChar <- function(dataframe, group_name)
 }
 ##################################################################################################################
 ##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
-##################################################################################################################
 
+# Main function 2: statsd1: Computes table of descriptive statistics and table of p-values from pairwise comparisons
+# group_name is the grouping variable 
+# Set fisher allows user to specify the threshold number of observations beneath which fisher's exact test 
+# will be used to compare categorical variables. Above this threshold chi squared will be used. 
+# fxn will determine if continuous variables are normally distributed or not and use t.test or 
+# man-whitney for 2 groups, anova or kriskal wallis for 3 or more groups   
 library(dplyr)
-#library(devtools)
-
 library(officer)
-#library(flextable)
 
-#### fix pairwise, also need to change set fisher, 
-### detect averages
-
-### Helper fxn 1: is_normal 
-### is_normal takes a continuous variable from a dataframe 
-### and determines if the values are normally distributed 
-### outputs TRUE if they are, FALSE if not 
+# is_normal 
+# is_normal takes a continuous variable from a dataframe 
+# and determines if the values are normally distributed 
+# outputs TRUE if they are, FALSE if not 
 is_normal <- function(dataframe_column)
 {
   ifelse((length(na.omit(dataframe_column))>5)
@@ -235,8 +216,8 @@ is_normal <- function(dataframe_column)
          })
 }
 
-#### helper 2: is_identical 
-### determines if all values in column are identical 
+## is_identical 
+## determines if all values in column are identical 
 is_identical <- function(dataframe_column)
 {
   dataframe_column <- na.omit(dataframe_column)
@@ -254,7 +235,8 @@ is_identical <- function(dataframe_column)
   return(identical)
 }
 
-##### determines if column contains dates. These will be removed 
+## datedetect
+## determines if column contains dates. These will be removed 
 datedetect <- function(dataframe_column)
 {
   ifelse((is.na(as.Date(as.character(dataframe_column),format="%m/%d/%Y"))==FALSE)|(is.na(as.POSIXct(as.character(dataframe_column),format="%m/%d/%Y %H:%M"))==FALSE)
@@ -267,10 +249,11 @@ datedetect <- function(dataframe_column)
          })
 }
 
-# function allows user to input names for the column names 
-# must ensure that there is no text including commented text beneath the final function 
-# call or will not work 
-# input is the number of groups analyzing 
+## list_from_user
+## function allows user to input names for the column names 
+## must ensure that there is no text including commented text beneath the final function 
+## call or will not work 
+## input is the number of groups being analyzed 
 list_from_user <- function(number_of_groups)
 {
   t=0
@@ -285,11 +268,12 @@ list_from_user <- function(number_of_groups)
   return(temp_list)
 }
 
-#### inputs a pvalue from statistical test, 
-### rounds it to two decimal places if > 0.1, 
-### three decmial places if < 0.1
-### prints < 0.001 if p is < 0.001 
-### returns rounded p value
+## p_value_round
+## inputs a pvalue from a statistical test, 
+## rounds it to two decimal places if > 0.1, 
+## three decmial places if < 0.1
+## prints < 0.001 if p is < 0.001 
+## returns rounded p value
 
 p_value_round <- function(pval)
 {
@@ -309,7 +293,8 @@ p_value_round <- function(pval)
   return(pval)
 }
 
-##### Determines if a variable is present in a particular list 
+## is_list_element
+## Determines if a variable is present in a particular list 
 is_list_element <- function(list, var) 
 {
   i = 1
@@ -334,30 +319,15 @@ is_list_element <- function(list, var)
          })
 }
 
-##### main fxn call 
-##### all categorical variables must be coded as 0 and 1 
-#### group_name is the grouping variables must be in the format 
-#### group 1 = 0, group 2 = 1, group 3 = 2...etc 
-### Set fisher allows user to specify the threshold
-### number of observations beneath which fisher's exact test 
-### will be used to compare categorical variables. Above this 
-### threshold chi squared will be used 
-### fxn will determine if continuous variables are normally distributed 
-### or not and use t.test or man whitney for 2 groups, anova or 
-### kriskal wallis for 3 or more groups 
 statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
-  # input data from dataframe, opened from csv above fxn call  
-  # defining output table with number of columns equal to the number of groups plus 
-  # one for the variable name and one for the p-value 
-  
   ifelse((number_of_groups>1),
          {
            categorical_table <- data.frame(matrix(nrow=1,ncol=(number_of_groups+2)))
-           #pairtable = data.frame(matrix(nrow=1,ncol=(number_of_groups+3)))
          },
          {
            categorical_table <- data.frame(matrix(nrow=1,ncol=(number_of_groups+1)))
          })
+	
   # Takes group_name and converts it to numeric starting from 0 if 
   # it is in character form 
   temp_dat = subset(dataframe, select=c(group_name))
@@ -509,24 +479,22 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                
                                ifelse((my_test$p.value<0.05),
                                       {
-                                        startvar = 0
-                                        endvar=1
-                                        cream = 1
+                                        startvar = 1
+                                        endvar=2
                                         z=1
-                                        ream=2
                                         while(z <= number_of_groups+5)
                                         {
                                           total_frame = data.frame()
                                           if(number_of_groups==4)
                                           {
-                                            guy<-as.data.frame(groups[cream])
-                                            me<-as.data.frame(groups[ream])
-                                            ifelse((is.null(cont_anal_tab[cream])==FALSE 
-                                                    &is.null(cont_anal_tab[ream])==FALSE
+                                            guy<-as.data.frame(groups[startvar])
+                                            me<-as.data.frame(groups[endvar])
+                                            ifelse((is.null(cont_anal_tab[startvar])==FALSE 
+                                                    &is.null(cont_anal_tab[endvar])==FALSE
                                                     &sum(na.omit(guy[[i]]))>0
                                                     &sum(na.omit(me[[i]]))>0),
                                                    {
-                                                     total_frame <- rbind((as.data.frame(groups[cream])),(as.data.frame(groups[ream])))
+                                                     total_frame <- rbind((as.data.frame(groups[startvar])),(as.data.frame(groups[endvar])))
                                                      ifelse(((sum(total_frame[[i]], na.rm=TRUE)>0)),
                                                             {
                                                               ifelse((fish==0),
@@ -552,49 +520,38 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                                             },
                                                             {
                                                               # endvar = endvar + 1 
-                                                              # ream = ream + 1
                                                               # z = z + 1
                                                               # next
                                                             })
-                                                     if(ream==number_of_groups)
+                                                     if(endvar==number_of_groups)
                                                      {
-                                                       cream = cream + 1
-                                                       ifelse((ream==number_of_groups&cream>1),
+                                                       startvar = startvar + 1
+                                                       ifelse((endvar==number_of_groups&startvar>1),
                                                               {
-                                                                # print(z)
-                                                                # print("one")
-                                                                # print(cream)
-                                                                # print(ream)
-                                                                # print('')
-                                                                cream = cream - 1
-                                                                ream = ream - 1
+                                                                startvar = startvar - 1
+                                                                endvar = endvar - 1
                                                               },
                                                               {
-                                                                # print(z)
-                                                                # print("two")
-                                                                # print(cream)
-                                                                # print(ream)
-                                                                # print('')
-                                                                ream = ream-2
+                                                                endvar = endvar-2
                                                               })
                                                      }
-                                                     ream = ream + 1
+                                                     endvar = endvar + 1
                                                      z = z + 1
                                                    },
                                                    {
-                                                     if(ream==number_of_groups)
+                                                     if(endvar==number_of_groups)
                                                      {
-                                                       cream = cream + 1
+                                                       startvar = startvar + 1
                                                        ifelse((z==number_of_groups+1),
                                                               {
-                                                                cream = cream - 1
-                                                                ream = ream - 1
+                                                                startvar = startvar - 1
+                                                                endvar = endvar - 1
                                                               },
                                                               {
-                                                                ream = ream-2
+                                                                endvar = endvar-2
                                                               })
                                                      }
-                                                     ream = ream + 1
+                                                     endvar = endvar + 1
                                                      pairlist <- append(pairlist, '')
                                                      z = z + 1
                                                    })
@@ -608,15 +565,15 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                               pairlist <- append(pairlist,'')
                                               break
                                             }
-                                            guy<-as.data.frame(groups[cream])
-                                            me<-as.data.frame(groups[ream])
-                                            ifelse((is.null(cont_anal_tab[cream])==FALSE 
-                                                    &is.null(cont_anal_tab[ream])==FALSE
+                                            guy<-as.data.frame(groups[startvar])
+                                            me<-as.data.frame(groups[endvar])
+                                            ifelse((is.null(cont_anal_tab[startvar])==FALSE 
+                                                    &is.null(cont_anal_tab[endvar])==FALSE
                                                     &sum(na.omit(guy[[i]]))>0
                                                     &sum(na.omit(me[[i]]))>0),
                                                    {
-                                                     total_frame <- rbind((as.data.frame(groups[cream])),(as.data.frame(groups[ream])))
-                                                     total_frame <- rbind((as.data.frame(groups[cream])),(as.data.frame(groups[ream])))
+                                                     total_frame <- rbind((as.data.frame(groups[startvar])),(as.data.frame(groups[endvar])))
+                                                     total_frame <- rbind((as.data.frame(groups[startvar])),(as.data.frame(groups[endvar])))
                                                      ifelse(((sum(total_frame[[i]], na.rm=TRUE)>0)),
                                                             {
                                                               ifelse((fish==0),
@@ -638,41 +595,40 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                                             },
                                                             {
                                                               # endvar = endvar + 1 
-                                                              # ream = ream + 1
                                                               # z = z + 1
                                                               # next
                                                             })
-                                                     if(ream==number_of_groups)
+                                                     if(endvar==number_of_groups)
                                                      {
-                                                       cream = cream + 1
-                                                       cream=cream-1
-                                                       ream = ream - 1
+                                                       startvar = startvar + 1
+                                                       startvar=startvar-1
+                                                       endvar = endvar - 1
                                                      }
-                                                     ream = ream + 1
+                                                     endvar = endvar + 1
                                                      z = z + 1
                                                    },
                                                    {
-                                                     if(ream==number_of_groups&cream<2)
+                                                     if(endvar==number_of_groups&startvar<2)
                                                      {
-                                                       cream = cream + 1
-                                                       cream=cream-1
-                                                       ream = ream-1
+                                                       startvar = startvar + 1
+                                                       startvar=startvar-1
+                                                       endvar = endvar-1
                                                      }
-                                                     ream = ream + 1
+                                                     endvar = endvar + 1
                                                      pairlist <- append(pairlist, '')
                                                      z = z + 1
                                                    })
                                           }
                                           if(number_of_groups==5)
                                           {
-                                            guy<-as.data.frame(groups[cream])
-                                            me<-as.data.frame(groups[ream])
-                                            ifelse((is.null(cont_anal_tab[cream])==FALSE 
-                                                    &is.null(cont_anal_tab[ream])==FALSE
+                                            guy<-as.data.frame(groups[startvar])
+                                            me<-as.data.frame(groups[endvar])
+                                            ifelse((is.null(cont_anal_tab[startvar])==FALSE 
+                                                    &is.null(cont_anal_tab[endvar])==FALSE
                                                     &sum(na.omit(guy[[i]]))>0
                                                     &sum(na.omit(me[[i]]))>0),
                                                    {
-                                                     total_frame <- rbind((as.data.frame(groups[cream])),(as.data.frame(groups[ream])))
+                                                     total_frame <- rbind((as.data.frame(groups[startvar])),(as.data.frame(groups[endvar])))
                                                      ifelse(((sum(total_frame[[i]], na.rm=TRUE)>0)),
                                                             {
                                                               ifelse((fish==0),
@@ -692,49 +648,38 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                                             },
                                                             {
                                                               # endvar = endvar + 1 
-                                                              # ream = ream + 1
                                                               # z = z + 1
                                                               # next
                                                             })
-                                                     if(ream==number_of_groups)
+                                                     if(endvar==number_of_groups)
                                                      {
-                                                       cream = cream + 1
-                                                       ifelse((ream==number_of_groups&cream>1),
+                                                       startvar = startvar + 1
+                                                       ifelse((endvar==number_of_groups&startvar>1),
                                                               {
-                                                                # print(z)
-                                                                # print("one")
-                                                                # print(cream)
-                                                                # print(ream)
-                                                                # print('')
-                                                                cream = cream - 1
-                                                                ream = ream - 1
+                                                                startvar = startvar - 1
+                                                                endvar = endvar - 1
                                                               },
                                                               {
-                                                                # print(z)
-                                                                # print("two")
-                                                                # print(cream)
-                                                                # print(ream)
-                                                                # print('')
-                                                                ream = ream-3
+                                                                endvar = endvar-3
                                                               })
                                                      }
-                                                     ream = ream + 1
+                                                     endvar = endvar + 1
                                                      z = z + 1
                                                    },
                                                    {
-                                                     if(ream==number_of_groups)
+                                                     if(endvar==number_of_groups)
                                                      {
-                                                       cream = cream + 1
+                                                       startvar = startvar + 1
                                                        ifelse((z==number_of_groups+1),
                                                               {
-                                                                cream = cream - 1
-                                                                ream = ream - 1
+                                                                startvar = startvar - 1
+                                                                endvar = endvar - 1
                                                               },
                                                               {
-                                                                ream = ream-2
+                                                                endvar = endvar-2
                                                               })
                                                      }
-                                                     ream = ream + 1
+                                                     endvar = endvar + 1
                                                      pairlist <- append(pairlist, '')
                                                      z = z + 1
                                                    })
@@ -820,38 +765,36 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                                  
                                                  ifelse((summary(my_anova)[[1]][["Pr(>F)"]]<0.05),
                                                         {
-                                                          cream = 1
+                                                          startvar = 1
                                                           z=1
-                                                          ream=2
+                                                          endvar=2
                                                           pairlist = list()
                                                           while(z <= number_of_groups+2)
                                                           {
                                                             if(number_of_groups==4)
                                                             {
-                                                              ifelse((is.null(cont_anal_tab[cream])==FALSE 
-                                                                      &is.null(cont_anal_tab[ream])==FALSE),
-                                                                     # &is.numeric(cont_anal_tab[cream])==TRUE
-                                                                     #&is.numeric(cont_anal_tab[ream])==TRUE),
+                                                              ifelse((is.null(cont_anal_tab[startvar])==FALSE 
+                                                                      &is.null(cont_anal_tab[endvar])==FALSE),
                                                                      {
-                                                                       my_cox <- t.test((unlist(cont_anal_tab[cream])),
-                                                                                        (unlist(cont_anal_tab[ream])),
+                                                                       my_cox <- t.test((unlist(cont_anal_tab[startvar])),
+                                                                                        (unlist(cont_anal_tab[endvar])),
                                                                                         alternative = "two.sided")
                                                                        pairlist <- append(pairlist, p_value_round(my_cox$p.value))
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream-2
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar-2
                                                                        }
-                                                                       ream = ream + 1
+                                                                       endvar = endvar + 1
                                                                        z = z + 1
                                                                      },
                                                                      {
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream-2
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar-2
                                                                        }
-                                                                       ream=ream+1
+                                                                       endvar=endvar+1
                                                                        pairlist <- append(pairlist, '')
                                                                        z = z + 1
                                                                      })
@@ -865,30 +808,28 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                                                 pairlist <- append(pairlist,'')
                                                                 break
                                                               }
-                                                              ifelse((is.null(cont_anal_tab[cream])==FALSE 
-                                                                      &is.null(cont_anal_tab[ream])==FALSE),
-                                                                     # &is.numeric(cont_anal_tab[cream])==TRUE
-                                                                     #&is.numeric(cont_anal_tab[ream])==TRUE),
+                                                              ifelse((is.null(cont_anal_tab[startvar])==FALSE 
+                                                                      &is.null(cont_anal_tab[endvar])==FALSE),
                                                                      {
-                                                                       my_cox <- t.test((unlist(cont_anal_tab[cream])),
-                                                                                        (unlist(cont_anal_tab[ream])),
+                                                                       my_cox <- t.test((unlist(cont_anal_tab[startvar])),
+                                                                                        (unlist(cont_anal_tab[endvar])),
                                                                                         alternative = "two.sided")
                                                                        pairlist <- append(pairlist, p_value_round(my_cox$p.value))
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream - 1
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar - 1
                                                                        }
-                                                                       ream = ream + 1
+                                                                       endvar = endvar + 1
                                                                        z = z + 1
                                                                      },
                                                                      {
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream - 1
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar - 1
                                                                        }
-                                                                       ream=ream+1
+                                                                       endvar=endvar+1
                                                                        pairlist <- append(pairlist, '')
                                                                        z = z + 1
                                                                      })
@@ -933,38 +874,36 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                                                              (p_value_round(my_kw$p.value))))
                                                  ifelse((my_kw$p.value<0.05),
                                                         {
-                                                          cream = 1
+                                                          startvar = 1
                                                           z=1
-                                                          ream=2
+                                                          endvar=2
                                                           pairlist = list()
                                                           while(z <= number_of_groups+2)
                                                           {
                                                             if(number_of_groups==4)
                                                             {
-                                                              ifelse((is.null(cont_anal_tab[cream])==FALSE 
-                                                                      &is.null(cont_anal_tab[ream])==FALSE),
-                                                                     # &is.numeric(cont_anal_tab[cream])==TRUE
-                                                                     #&is.numeric(cont_anal_tab[ream])==TRUE),
+                                                              ifelse((is.null(cont_anal_tab[startvar])==FALSE 
+                                                                      &is.null(cont_anal_tab[endvar])==FALSE),
                                                                      {
-                                                                       my_cox <- t.test((unlist(cont_anal_tab[cream])),
-                                                                                        (unlist(cont_anal_tab[ream])),
+                                                                       my_cox <- t.test((unlist(cont_anal_tab[startvar])),
+                                                                                        (unlist(cont_anal_tab[endvar])),
                                                                                         alternative = "two.sided")
                                                                        pairlist <- append(pairlist, p_value_round(my_cox$p.value))
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream-2
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar-2
                                                                        }
-                                                                       ream = ream + 1
+                                                                       endvar = endvar + 1
                                                                        z = z + 1
                                                                      },
                                                                      {
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream-2
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar-2
                                                                        }
-                                                                       ream=ream+1
+                                                                       endvar=endvar+1
                                                                        pairlist <- append(pairlist, '')
                                                                        z = z + 1
                                                                      })
@@ -979,30 +918,28 @@ statsd1 <- function(dataframe, set_fisher=10, group_name, number_of_groups){
                                                                 pairlist <- append(pairlist,'')
                                                                 break
                                                               }
-                                                              ifelse((is.null(cont_anal_tab[cream])==FALSE 
-                                                                      &is.null(cont_anal_tab[ream])==FALSE),
-                                                                     # &is.numeric(cont_anal_tab[cream])==TRUE
-                                                                     #&is.numeric(cont_anal_tab[ream])==TRUE),
+                                                              ifelse((is.null(cont_anal_tab[startvar])==FALSE 
+                                                                      &is.null(cont_anal_tab[endvar])==FALSE),
                                                                      {
-                                                                       my_cox <- t.test((unlist(cont_anal_tab[cream])),
-                                                                                        (unlist(cont_anal_tab[ream])),
+                                                                       my_cox <- t.test((unlist(cont_anal_tab[startvar])),
+                                                                                        (unlist(cont_anal_tab[endvar])),
                                                                                         alternative = "two.sided")
                                                                        pairlist <- append(pairlist, p_value_round(my_cox$p.value))
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream - 1
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar - 1
                                                                        }
-                                                                       ream = ream + 1
+                                                                       endvar = endvar + 1
                                                                        z = z + 1
                                                                      },
                                                                      {
-                                                                       if(ream==number_of_groups&cream<2)
+                                                                       if(endvar==number_of_groups&startvar<2)
                                                                        {
-                                                                         cream = cream + 1
-                                                                         ream = ream - 1
+                                                                         startvar = startvar + 1
+                                                                         endvar = endvar - 1
                                                                        }
-                                                                       ream=ream+1
+                                                                       endvar=endvar+1
                                                                        pairlist <- append(pairlist, '')
                                                                        z = z + 1
                                                                      })
@@ -1209,6 +1146,7 @@ flex_tab_addnew <- function(cattable, outfile)
 ##################################################################################################################
 ##################################################################################################################
 
+
 # Define UI ----
 library(dplyr)
 #library(devtools)
@@ -1260,8 +1198,8 @@ ui <- fluidPage(
                 tabPanel("Instructions",
                   br(),
                   p(strong("This app is designed to produce a table of descriptive statistics for clinical research studies. 
-                    This app is housed on a private cloud-based server. All medical record numbers and other personal identifying information 
-		   should be removed prior to file upload. The data will be temporarily loaded to the server for 
+                     All uploaded data should have medical record numbers and other protected health information removed
+                     as this app is housed on a public server. The data will be temporarily loaded to the server for 
                      analysis, but not saved there. Following closure, the data is removed from the server."),style = "background-color:yellow"),
                   p("Produces a table one with each variable summarized as % (number) for categorical variables 
                     and mean or median (SD or IQR) for continuous variables for each group (supports up to 5 groups). If there are more than 2 groups, will 
@@ -1287,7 +1225,7 @@ ui <- fluidPage(
                     is technically always appropriate to perform, though commonly it is used when 20% of groups being compared 
                     have < 5 instances of the observed variable. This means that if we are comparing four groups, if one of 
                     those groups had < 5 observations, that is 25% of groups, necessitating the exact test. The chosen cutoff 
-                    value in the app means that if any single group has fewer than that number of observations, the exact test 
+                    value in the app means that if any single group has less than that number of observations, the exact test 
                     will be used instead of chi-squared. For a thorough explanation of this topic see reference (1)"),
                   h3("Continuous variables"),
                   p("Continuous variables are compared using either a t-test or mann-whitney U test in comparing two groups and ANOVA 
@@ -1299,8 +1237,8 @@ ui <- fluidPage(
                   br(),
                   p("Variables are assessed for normality using the Shapiro-wilk test. However, the Shapiro-wilk test is not accurate 
                     when using small sample sizes so if a group has fewer than 5 observations, it is automatically considered 
-                    non-normal (reference 2). "),
-                  img(src = "pic3.png", height = 210, width = 600),
+                    non-normal. "),
+                  img(src = "pic3.png", height = 210, width = 600, style="display: block; margin-left: auto; margin-right: auto;"),
                   h3("Multi-level categorical variables"),
                   p("Categorical variables with more than two possible values should be used when these values are mutually exclusive, meaning 
                     that if a patient takes on a certain value of the variable it is not possible that they could take on a different value simultaneously. 
@@ -1312,7 +1250,14 @@ ui <- fluidPage(
                     value of the categorical variable into an independent variable (new column in a spreedsheet) where all patients will have either a '0'
                     or '1' for this variable, denoting its presence of absence. All non-mutally exclusive multi-level categorical variables should be transformed 
                     prior to uploading the spreedsheet into this program"),
-                  h3("Pairwise testing")
+                  h3("Pairwise testing"),
+                  p("When the number of groups is greater than 2, significant results of tests for categorical and continuous variables described above, 
+                    simply demonstrate that at least one group median, mean, or number of observations significantly differs from one or more of the other 
+                    groups. However, these significant results tells us nothing about which groups differ and at times we require this specific information. 
+                    If a comparative test produces a p-value less than 0.05, pairwise testing will automatically be conducted between every possible 
+                    pair of groups. The results (p-values) of these tests will be put into a separate table that can be downloaded. The image below shows how 
+                    the table column numbers correspond to the pairs of groups tested."),
+                  img(src = "pic5.png", height = 350, width = 700, style="display: block; margin-left: auto; margin-right: auto;")
             
                 ),
                 tabPanel("Table 1", tableOutput("table1") %>% withSpinner(color="#0dc5c1")),
@@ -1323,7 +1268,7 @@ ui <- fluidPage(
                          )
     ),
 
-   # tableOutput("table1"),
+    #tableOutput("table1"),
     #tableOutput("pairwise")
     )
   )
@@ -1342,14 +1287,12 @@ server <- function(input, output) {
     })
     me <- statsd1(filedata(),input$Fisher,input$my_text,input$group_number)
     output$table1 <- renderTable ({
-     # me <- statsd1(filedata(),input$Fisher,input$my_text,input$group_number)
       me[[1]]
     })
     if(input$group_number>2)
     {
       output$pairwise <- renderTable ({
-      	#me <- statsd1(filedata(),input$Fisher,input$my_text,input$group_number)
-      	me[[2]]
+        me[[2]]
       })
     }
     output$downloadData <- downloadHandler(
@@ -1357,8 +1300,7 @@ server <- function(input, output) {
         paste("mydata", ".csv", sep = "")
       },
       content = function(file) {
-	#me <- statsd1(filedata(),input$Fisher,input$my_text,input$group_number)
-	 write.csv(me[[1]], file, row.names = FALSE)
+        write.csv(me[[1]], file, row.names = FALSE)
       }
     )
     if(input$group_number>2)
@@ -1368,8 +1310,7 @@ server <- function(input, output) {
           paste("pairwise", ".csv", sep = "")
         },
         content = function(file) {
-	  #me <- statsd1(filedata(),input$Fisher,input$my_text,input$group_number)
-           write.csv(me[[2]], file, row.names = FALSE)
+          write.csv(me[[2]], file, row.names = FALSE)
         }
       )
     }
