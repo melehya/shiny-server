@@ -1196,7 +1196,7 @@ ui <- fluidPage(
                   img(src = "pic1.png", height = 105, width = 400),
                   br(),
                   h3("Step 2: Input your grouping variable"),
-                  p("This app can produce descriptive statistics that compare up to five groups simultaneously. A single 
+                  p("This app can produce descriptive statistics that compare up to four groups (five coming soon) simultaneously. A single 
                     variable must be created in your spreadsheet that differentiates the groups. In the below example the first group is 
                     given a value of 0 in the 'Group' variable and the second group a value of 1. Either numbers or words can be 
                     supplied in the grouping variable like 'one' or 'zero.'"),
