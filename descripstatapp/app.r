@@ -1143,7 +1143,7 @@ library(shinycssloaders)
 ui <- fluidPage(
   
   fluidPage(theme = shinytheme("sandstone"),
-  titlePanel("Descriptive Statistics"),
+  titlePanel("Table 1 generator"),
   
   sidebarPanel(
     helpText(""),
