@@ -1157,7 +1157,7 @@ ui <- fluidPage(
               label = "Enter grouping variable name"),
     
     sliderInput("group_number", 
-                label = "Enter number of groups (up to 5)",
+                label = "Enter number of groups (up to 4)",
                 min=0, max=5, value = c(0)),
     sliderInput("Fisher", 
                 label = "Set cutoff value for Fisher's exact test",
