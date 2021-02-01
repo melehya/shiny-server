@@ -1183,7 +1183,7 @@ ui <- fluidPage(
 		     The app is housed on a private cloud based server. The data will be temporarily loaded to the server for 
                      analysis, but not saved there. Following closure, the data is removed from the server."),style = "background-color:yellow"),
                   p("Produces a table one with each variable summarized as % (number) for categorical variables 
-                    and mean or median (SD or IQR) for continuous variables for each group (supports up to 5 groups). If there are more than 2 groups, will 
+                    and mean or median (SD or IQR) for continuous variables for up to four groups (5 groups coming soon). If there are more than 2 groups, will 
                     also produce a table of p-values produced in pairwise testing. Categorical variables can be coded as 0 or 1, or using 
                     character names like 'one' or 'two'. All categorical variables with more than two possible values should be coded as 
                     character names."),
